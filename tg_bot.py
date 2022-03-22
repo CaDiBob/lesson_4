@@ -2,7 +2,7 @@ import logging
 
 from environs import Env
 import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
 
 logger = logging.getLogger('tg_bot')
@@ -20,16 +20,19 @@ class TelegramLogsHandler(logging.Handler):
         self.tg_bot.send_message(chat_id=self.chat_id, text=log_entry)
 
 
+def button(update, context):
+    query = update.callback_query
+    query.answer()
+    query.edit_message_text(text=f"Selected option: {query.data}")
+
+
 def start(update, context):
-    update.message.reply_text('Добро пожаловать!')
-
-
-def help(update, context):
-    update.message.reply_text(
-        '''
-        Бот по проведению викторины на должность смотрителя музея!
-        '''
-    )
+    custom_keyboard = [
+        ['Новый вопрос', 'Сдаться'],
+        ['Мой счет']
+    ]
+    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+    update.message.reply_text(text='Привет я бот для викторин!', reply_markup=reply_markup)
 
 
 def echo(update, context):
@@ -51,6 +54,7 @@ def main():
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help))
+    dispatcher.add_handler(CallbackQueryHandler(button))
     dispatcher.add_handler(MessageHandler(
         Filters.text & ~Filters.command, echo
     ))
