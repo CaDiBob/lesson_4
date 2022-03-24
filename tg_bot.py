@@ -1,11 +1,13 @@
 import logging
 import random
-import re
+from time import sleep
 
 from environs import Env
 import redis
 import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
+from telegram.ext import (
+    Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
+)
 from questions import get_questions_quiz
 
 
@@ -36,11 +38,23 @@ def start(update, context):
     update.message.reply_text(text='Привет! Я бот для викторин.', reply_markup=get_buttons())
 
 
+def get_answer(update, context):
+    questions = context.bot_data['questions']
+    db = context.bot_data['db']
+    question = db.get(update.message.chat_id)
+    answer, *trash = questions[question].split('.')
+    return answer.strip()
+
+
 def get_give_up(update, context):
-    pass
+    answer = get_answer(update, context)
+    update.message.reply_text(f'Ответ: {answer}', reply_markup=get_buttons())
+    sleep(1)
+    update.message.reply_text('Новый вопрос:')
+    handle_new_question_request(update, context)
 
 
-def get_new_question(update, context):
+def handle_new_question_request(update, context):
     db = context.bot_data['db']
     question = random.choice(list(
         context.bot_data['questions']
@@ -49,12 +63,8 @@ def get_new_question(update, context):
     db.set(update.message.chat_id, question)
 
 
-def check_answer(update, context):
-    questions = context.bot_data['questions']
-    db = context.bot_data['db']
-    question = db.get(update.message.chat_id)
-    answer, *trash = questions[question].split('.')
-    answer = answer.strip()
+def handle_solution_attempt(update, context):
+    answer = get_answer(update, context)
     text = update.message.text
     if text == answer:
         update.message.reply_text(
@@ -93,9 +103,9 @@ def main():
     conversation_handler = ConversationHandler(
         entry_points=[
             CommandHandler('start', start),
-            MessageHandler(Filters.regex(r'Новый вопрос'), get_new_question),
+            MessageHandler(Filters.regex(r'Новый вопрос'), handle_new_question_request),
             MessageHandler(Filters.regex(r'Сдаться'), get_give_up),
-            MessageHandler(Filters.text & ~Filters.command, check_answer),
+            MessageHandler(Filters.text & ~Filters.command, handle_solution_attempt),
         ],
         states={},
         fallbacks=[])
