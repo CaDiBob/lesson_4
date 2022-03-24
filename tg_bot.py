@@ -9,6 +9,7 @@ from telegram.ext import (
     Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 )
 from questions import get_questions_quiz
+from db import get_connect_db
 
 
 logger = logging.getLogger('tg_bot')
@@ -84,14 +85,9 @@ def error(update, context):
 def main():
     env = Env()
     env.read_env()
+    db = get_connect_db()
     tg_token = env('TG_TOKEN')
     tg_chat_id = env('TG_CHAT_ID')
-    db = redis.Redis(
-        host=env('REDIS_HOST'),
-        port=env('REDIS_PORT'),
-        password=env('REDIS_PASSWORD'),
-        decode_responses=True,
-    )
     questions = get_questions_quiz()
     updater = Updater(tg_token)
     bot = telegram.Bot(token=tg_token)
