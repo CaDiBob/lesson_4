@@ -1,7 +1,9 @@
 import logging
 import random
+import re
 
 from environs import Env
+import redis
 import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 from questions import get_questions_quiz
@@ -25,7 +27,6 @@ class TelegramLogsHandler(logging.Handler):
 def get_buttons():
     custom_keyboard = [
         ['Новый вопрос', 'Сдаться'],
-        ['Мой счет']
     ]
     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     return reply_markup
@@ -35,18 +36,35 @@ def start(update, context):
     update.message.reply_text(text='Привет! Я бот для викторин.', reply_markup=get_buttons())
 
 
-def get_new_question(update, context):
-    questions = get_questions_quiz()
-    question = random.choice(list(questions.keys()))
-    update.message.reply_text(question, reply_markup=get_buttons())
-
-
 def get_give_up(update, context):
     pass
 
 
-def get_answer(update, context):
-    pass
+def get_new_question(update, context):
+    db = context.bot_data['db']
+    question = random.choice(list(
+        context.bot_data['questions']
+    ))
+    update.message.reply_text(question, reply_markup=get_buttons())
+    db.set(update.message.chat_id, question)
+
+
+def check_answer(update, context):
+    questions = context.bot_data['questions']
+    db = context.bot_data['db']
+    question = db.get(update.message.chat_id)
+    answer, *trash = questions[question].split('.')
+    answer = answer.strip()
+    text = update.message.text
+    if text == answer:
+        update.message.reply_text(
+            'Правильно! Поздравляю! Для следующего вопроса нажми «Новый вопрос»',
+            reply_markup=get_buttons(),
+        )
+    else:
+        update.message.reply_text(
+            'Неправильно… Попробуешь ещё раз?',
+        )
 
 
 def error(update, context):
@@ -58,17 +76,26 @@ def main():
     env.read_env()
     tg_token = env('TG_TOKEN')
     tg_chat_id = env('TG_CHAT_ID')
+    db = redis.Redis(
+        host=env('REDIS_HOST'),
+        port=env('REDIS_PORT'),
+        password=env('REDIS_PASSWORD'),
+        decode_responses=True,
+    )
+    questions = get_questions_quiz()
     updater = Updater(tg_token)
     bot = telegram.Bot(token=tg_token)
     logger.addHandler(TelegramLogsHandler(tg_chat_id, bot))
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.bot_data['db'] = db
+    dispatcher.bot_data['questions'] = questions
     conversation_handler = ConversationHandler(
         entry_points=[
             CommandHandler('start', start),
             MessageHandler(Filters.regex(r'Новый вопрос'), get_new_question),
             MessageHandler(Filters.regex(r'Сдаться'), get_give_up),
-            MessageHandler(Filters.text & ~Filters.command, get_answer),
+            MessageHandler(Filters.text & ~Filters.command, check_answer),
         ],
         states={},
         fallbacks=[])
