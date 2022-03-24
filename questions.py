@@ -1,15 +1,14 @@
 import os
 import re
-import random
 
 
 def get_questions_quiz():
-    question_quiz = dict()
+    questions_quiz = dict()
     folder = 'quiz-questions'
-    questions_file = sorted(os.listdir(folder))
-    for txt_file in questions_file:
+    question_files = sorted(os.listdir(folder))
+    for questions_file in question_files:
         with open(
-                os.path.join(folder, txt_file), 'r', encoding='KOI8-R')as file:
+                os.path.join(folder, questions_file), 'r', encoding='KOI8-R')as file:
             file = file.read()
         questions = file.split('\n\n\n')
         for question in questions:
@@ -21,9 +20,5 @@ def get_questions_quiz():
                 if re.findall('Ответ:', text):
                     answer_text = re.split('Ответ:', text)[1]
                     answer_text = answer_text.replace('\n', ' ')
-            question_quiz[question_text] = answer_text
-    return question_quiz
-
-
-if __name__ == '__main__':
-    print(random.choice(list(get_questions_quiz().keys())))
+            questions_quiz[question_text] = answer_text
+    return questions_quiz
