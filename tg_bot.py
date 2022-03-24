@@ -3,7 +3,6 @@ import random
 from time import sleep
 
 from environs import Env
-import redis
 import telegram
 from telegram.ext import (
     Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
