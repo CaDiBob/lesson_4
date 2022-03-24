@@ -43,6 +43,7 @@ pip install -r requirements.txt
 python vk_bot.py
 ```
 Для начала викторины введите `start`
+
 [Ссылка на бота ВКонтакте](https://vk.com/public212082294)
 
 ![](gif/vk_bot.gif)
