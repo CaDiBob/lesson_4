@@ -1,6 +1,5 @@
 import logging
 import random
-from time import sleep
 
 import redis
 from environs import Env
@@ -49,7 +48,6 @@ def get_answer(update, context):
 def get_give_up(update, context):
     answer = get_answer(update, context)
     update.message.reply_text(f'Ответ: {answer}', reply_markup=get_buttons())
-    sleep(1)
     update.message.reply_text('Новый вопрос:')
     handle_new_question_request(update, context)
 

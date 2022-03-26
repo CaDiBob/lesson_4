@@ -1,7 +1,6 @@
 import random
 
 import redis
-from time import sleep
 import vk_api as vk
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
@@ -10,33 +9,32 @@ from environs import Env
 from questions import get_questions_quiz
 
 
-def get_answer(event, db):
-    questions = get_questions_quiz()
+def get_answer(event, db, questions):
     question = db.get(event.user_id)
     answer, *trash = questions[question].split('.')
     return answer.strip()
 
 
-def get_give_up(event, vk_api, db):
-    answer = get_answer(event, db)
+def get_give_up(event, vk_api, db, questions):
+    answer = get_answer(event, db, questions)
     vk_api.messages.send(
         user_id=event.user_id,
         message=f'Ответ: {answer}',
         random_id=get_random_id(),
         keyboard=get_keyboard(),
     )
-    sleep(1)
+
     vk_api.messages.send(
         user_id=event.user_id,
         message='Новый вопрос:',
         random_id=get_random_id(),
         keyboard=get_keyboard(),
     )
-    handle_new_question_request(event, vk_api, db)
+    handle_new_question_request(event, vk_api, db, questions)
 
 
-def handle_solution_attempt(event, vk_api, db):
-    answer = get_answer(event, db)
+def handle_solution_attempt(event, vk_api, db, questions):
+    answer = get_answer(event, db, questions)
     text = event.text
     if text == answer:
         vk_api.messages.send(
@@ -54,9 +52,9 @@ def handle_solution_attempt(event, vk_api, db):
         )
 
 
-def handle_new_question_request(event, vk_api, db):
+def handle_new_question_request(event, vk_api, db, questions):
     question = random.choice(list(
-        get_questions_quiz()
+        questions
     ))
     vk_api.messages.send(
         user_id=event.user_id,
@@ -96,16 +94,17 @@ def main():
     vk_session = vk.VkApi(token=vk_token)
     vk_api = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
+    questions = get_questions_quiz()
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             if event.text.lower() == 'start':
                 start(event, vk_api)
             elif event.text == 'Новый вопрос':
-                handle_new_question_request(event, vk_api, db)
+                handle_new_question_request(event, vk_api, db, questions)
             elif event.text == 'Сдаться':
-                get_give_up(event, vk_api, db)
+                get_give_up(event, vk_api, db, questions)
             else:
-                handle_solution_attempt(event, vk_api, db)
+                handle_solution_attempt(event, vk_api, db, questions)
 
 
 if __name__ == "__main__":
