@@ -38,10 +38,9 @@ def start(update, context):
 
 
 def get_answer(update, context):
-    questions = context.bot_data['questions']
     db = context.bot_data['db']
-    question = db.get(update.message.chat_id)
-    answer, *_ = questions[question].split('.')
+    raw_answer = db.get(update.message.chat_id)
+    answer, *_ = raw_answer.split('.')
     return answer.strip()
 
 
@@ -53,12 +52,13 @@ def get_give_up(update, context):
 
 
 def handle_new_question_request(update, context):
+    questions = context.bot_data['questions']
     db = context.bot_data['db']
     question = random.choice(list(
-        context.bot_data['questions']
+        questions
     ))
     update.message.reply_text(question, reply_markup=get_buttons())
-    db.set(update.message.chat_id, question)
+    db.set(update.message.chat_id, questions[question])
 
 
 def handle_solution_attempt(update, context):

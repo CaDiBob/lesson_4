@@ -9,14 +9,14 @@ from environs import Env
 from questions import get_questions_quiz
 
 
-def get_answer(event, db, questions):
-    question = db.get(event.user_id)
-    answer, *trash = questions[question].split('.')
+def get_answer(event, db):
+    raw_answer = db.get(event.user_id)
+    answer, *_ = raw_answer.split('.')
     return answer.strip()
 
 
 def get_give_up(event, vk_api, db, questions):
-    answer = get_answer(event, db, questions)
+    answer = get_answer(event, db)
     vk_api.messages.send(
         user_id=event.user_id,
         message=f'Ответ: {answer}',
@@ -33,8 +33,8 @@ def get_give_up(event, vk_api, db, questions):
     handle_new_question_request(event, vk_api, db, questions)
 
 
-def handle_solution_attempt(event, vk_api, db, questions):
-    answer = get_answer(event, db, questions)
+def handle_solution_attempt(event, vk_api, db):
+    answer = get_answer(event, db)
     text = event.text
     if text == answer:
         vk_api.messages.send(
@@ -62,7 +62,7 @@ def handle_new_question_request(event, vk_api, db, questions):
         random_id=get_random_id(),
         keyboard=get_keyboard()
     )
-    db.set(event.user_id, question)
+    db.set(event.user_id, questions[question])
 
 
 def start(event, vk_api):
@@ -104,7 +104,7 @@ def main():
             elif event.text == 'Сдаться':
                 get_give_up(event, vk_api, db, questions)
             else:
-                handle_solution_attempt(event, vk_api, db, questions)
+                handle_solution_attempt(event, vk_api, db)
 
 
 if __name__ == "__main__":
