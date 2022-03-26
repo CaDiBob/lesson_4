@@ -89,10 +89,11 @@ def main():
     env = Env()
     env.read_env('.env')
     db = redis.Redis(
-        host=env('REDIS_HOST'),
-        port=env('REDIS_PORT'),
-        password=env('REDIS_PASSWORD'),
+        host=env('VK_REDIS_HOST'),
+        port=env('VK_REDIS_PORT'),
+        password=env('VK_REDIS_PASSWORD'),
         decode_responses=True,
+        db=0,
     )
     vk_token = env('VK_TOKEN')
     vk_session = vk.VkApi(token=vk_token)

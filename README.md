@@ -17,11 +17,17 @@
 
 `VK_TOKEN=Токен ВКонтакте` Можно получить в настройках группы "Работа с API"->"Ключи доступа"
 
-`REDIS_HOST=Redis host` можно получить в [личном кабинете](https://app.redislabs.com/#/login) 
+`TG_REDIS_HOST=Redis host для бота Телеграм` можно получить в [личном кабинете](https://app.redislabs.com/#/login) 
 
-`REDIS_PORT=Redis port` можно получить в [личном кабинете](https://app.redislabs.com/#/login)
+`TG_REDIS_PORT=Redis port для бота Телеграм` можно получить в [личном кабинете](https://app.redislabs.com/#/login)
 
-`REDIS_PASSWORD=Redis password` можно получить в [личном кабинете](https://app.redislabs.com/#/login)
+`TG_REDIS_PASSWORD=Redis password для бота Телеграм` можно получить в [личном кабинете](https://app.redislabs.com/#/login)
+
+`VK_REDIS_HOST=Redis host для бота ВКонтакте` можно получить в [личном кабинете](https://app.redislabs.com/#/login) 
+
+`VK_REDIS_PORT=Redis port для бота ВКонтакте` можно получить в [личном кабинете](https://app.redislabs.com/#/login)
+
+`VK_REDIS_PASSWORD=Redis password для бота ВКонтакте` можно получить в [личном кабинете](https://app.redislabs.com/#/login)
 
 ### Дополнительные скрипты
 

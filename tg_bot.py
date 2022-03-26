@@ -86,9 +86,9 @@ def main():
     env = Env()
     env.read_env()
     db = redis.Redis(
-        host=env('REDIS_HOST'),
-        port=env('REDIS_PORT'),
-        password=env('REDIS_PASSWORD'),
+        host=env('TG_REDIS_HOST'),
+        port=env('TG_REDIS_PORT'),
+        password=env('TG_REDIS_PASSWORD'),
         decode_responses=True,
     )
     tg_token = env('TG_TOKEN')
