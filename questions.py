@@ -14,15 +14,11 @@ def get_questions_quiz():
         for question in questions:
             raw_texts = question.split('\n\n')
             for text in raw_texts:
-                if re.findall('Вопрос.*:', text):
-                    question_text = re.split('Вопрос.*:', text)[1]
+                if re.findall(r'Вопрос.*:', text):
+                    question_text = re.split(r'Вопрос.*:', text)[1]
                     question_text = question_text.replace('\n', ' ')
-                if re.findall('Ответ:', text):
-                    answer_text = re.split('Ответ:', text)[1]
+                if re.findall(r'Ответ:', text):
+                    answer_text = re.split(r'Ответ:', text)[1]
                     answer_text = answer_text.replace('\n', ' ')
             questions_quiz[question_text] = answer_text
     return questions_quiz
-
-
-if __name__ == '__main__':
-    get_questions_quiz()
