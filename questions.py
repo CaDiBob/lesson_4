@@ -12,8 +12,8 @@ def get_questions_quiz():
             file = file.read()
         questions = file.split('\n\n\n')
         for question in questions:
-            question_and_answer = question.split('\n\n')
-            for text in question_and_answer:
+            raw_texts = question.split('\n\n')
+            for text in raw_texts:
                 if re.findall('Вопрос.*:', text):
                     question_text = re.split('Вопрос.*:', text)[1]
                     question_text = question_text.replace('\n', ' ')
@@ -22,3 +22,7 @@ def get_questions_quiz():
                     answer_text = answer_text.replace('\n', ' ')
             questions_quiz[question_text] = answer_text
     return questions_quiz
+
+
+if __name__ == '__main__':
+    get_questions_quiz()
