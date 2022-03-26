@@ -45,7 +45,7 @@ def handle_solution_attempt(event, vk_api, db):
             random_id=get_random_id(),
             keyboard=get_keyboard()
         )
-    if text != answer:
+    else:
         vk_api.messages.send(
             user_id=event.user_id,
             message='Неправильно… Попробуешь ещё раз?',

@@ -42,7 +42,7 @@ def get_answer(update, context):
     questions = context.bot_data['questions']
     db = context.bot_data['db']
     question = db.get(update.message.chat_id)
-    answer, *trash = questions[question].split('.')
+    answer, *_ = questions[question].split('.')
     return answer.strip()
 
 
@@ -100,16 +100,16 @@ def main():
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.bot_data['db'] = db
     dispatcher.bot_data['questions'] = questions
-    conversation_handler = ConversationHandler(
-        entry_points=[
-            CommandHandler('start', start),
-            MessageHandler(Filters.regex(r'Новый вопрос'), handle_new_question_request),
-            MessageHandler(Filters.regex(r'Сдаться'), get_give_up),
-            MessageHandler(Filters.text & ~Filters.command, handle_solution_attempt),
-        ],
-        states={},
-        fallbacks=[])
-    dispatcher.add_handler(conversation_handler)
+    dispatcher.add_handler(CommandHandler('start', start))
+    dispatcher.add_handler(MessageHandler(
+        Filters.regex(r'Новый вопрос'), handle_new_question_request
+    ))
+    dispatcher.add_handler(MessageHandler(
+        Filters.regex(r'Сдаться'), get_give_up
+    ))
+    dispatcher.add_handler(MessageHandler(
+        Filters.text & ~Filters.command, handle_solution_attempt
+    ))
     dispatcher.add_error_handler(error)
     updater.start_polling()
     updater.idle()
