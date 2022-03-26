@@ -2,13 +2,13 @@ import logging
 import random
 from time import sleep
 
+import redis
 from environs import Env
 import telegram
 from telegram.ext import (
     Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 )
 from questions import get_questions_quiz
-from db import get_connect_db
 
 
 logger = logging.getLogger('tg_bot')
@@ -84,7 +84,12 @@ def error(update, context):
 def main():
     env = Env()
     env.read_env()
-    db = get_connect_db()
+    db = redis.Redis(
+        host=env('REDIS_HOST'),
+        port=env('REDIS_PORT'),
+        password=env('REDIS_PASSWORD'),
+        decode_responses=True,
+    )
     tg_token = env('TG_TOKEN')
     tg_chat_id = env('TG_CHAT_ID')
     questions = get_questions_quiz()

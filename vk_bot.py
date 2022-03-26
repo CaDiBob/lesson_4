@@ -1,12 +1,12 @@
 import random
 
+import redis
 from time import sleep
 import vk_api as vk
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 from environs import Env
-from db import get_connect_db
 from questions import get_questions_quiz
 
 
@@ -86,7 +86,12 @@ def get_keyboard():
 def main():
     env = Env()
     env.read_env('.env')
-    db = get_connect_db()
+    db = redis.Redis(
+        host=env('REDIS_HOST'),
+        port=env('REDIS_PORT'),
+        password=env('REDIS_PASSWORD'),
+        decode_responses=True,
+    )
     vk_token = env('VK_TOKEN')
     vk_session = vk.VkApi(token=vk_token)
     vk_api = vk_session.get_api()
