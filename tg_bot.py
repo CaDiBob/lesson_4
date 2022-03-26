@@ -98,7 +98,6 @@ def main():
     bot = telegram.Bot(token=tg_token)
     logger.addHandler(TelegramLogsHandler(tg_chat_id, bot))
     dispatcher = updater.dispatcher
-    dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.bot_data['db'] = db
     dispatcher.bot_data['questions'] = questions
     dispatcher.add_handler(CommandHandler('start', start))
