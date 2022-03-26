@@ -37,32 +37,35 @@ def start(update, context):
     update.message.reply_text(text='Привет! Я бот для викторин.', reply_markup=get_buttons())
 
 
-def get_answer(update, context):
+def get_answer(tg_user_id, context):
     db = context.bot_data['db']
-    raw_answer = db.get(update.message.chat_id)
+    raw_answer = db.get(tg_user_id)
     answer, *_ = raw_answer.split('.')
     return answer.strip()
 
 
 def get_give_up(update, context):
-    answer = get_answer(update, context)
+    tg_user_id = update.message.from_user['id']
+    answer = get_answer(tg_user_id, context)
     update.message.reply_text(f'Ответ: {answer}', reply_markup=get_buttons())
     update.message.reply_text('Новый вопрос:')
     handle_new_question_request(update, context)
 
 
 def handle_new_question_request(update, context):
+    tg_user_id = update.message.from_user['id']
     questions = context.bot_data['questions']
     db = context.bot_data['db']
     question = random.choice(list(
         questions
     ))
     update.message.reply_text(question, reply_markup=get_buttons())
-    db.set(update.message.chat_id, questions[question])
+    db.set(tg_user_id, questions[question])
 
 
 def handle_solution_attempt(update, context):
-    answer = get_answer(update, context)
+    tg_user_id = update.message.from_user['id']
+    answer = get_answer(tg_user_id, context)
     text = update.message.text
     if text == answer:
         update.message.reply_text(

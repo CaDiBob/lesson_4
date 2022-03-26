@@ -9,23 +9,24 @@ from environs import Env
 from questions import get_questions_quiz
 
 
-def get_answer(event, db):
-    raw_answer = db.get(event.user_id)
+def get_answer(db, vk_user_id):
+    raw_answer = db.get(vk_user_id)
     answer, *_ = raw_answer.split('.')
     return answer.strip()
 
 
 def get_give_up(event, vk_api, db, questions):
-    answer = get_answer(event, db)
+    vk_user_id = event.user_id
+    answer = get_answer(db, vk_user_id)
     vk_api.messages.send(
-        user_id=event.user_id,
+        user_id=vk_user_id,
         message=f'Ответ: {answer}',
         random_id=get_random_id(),
         keyboard=get_keyboard(),
     )
 
     vk_api.messages.send(
-        user_id=event.user_id,
+        user_id=vk_user_id,
         message='Новый вопрос:',
         random_id=get_random_id(),
         keyboard=get_keyboard(),
@@ -34,18 +35,19 @@ def get_give_up(event, vk_api, db, questions):
 
 
 def handle_solution_attempt(event, vk_api, db):
-    answer = get_answer(event, db)
+    vk_user_id = event.user_id
+    answer = get_answer(db, vk_user_id)
     text = event.text
     if text == answer:
         vk_api.messages.send(
-            user_id=event.user_id,
+            user_id=vk_user_id,
             message='Правильно! Поздравляю! Для следующего вопроса нажми «Новый вопрос»',
             random_id=get_random_id(),
             keyboard=get_keyboard()
         )
     else:
         vk_api.messages.send(
-            user_id=event.user_id,
+            user_id=vk_user_id,
             message='Неправильно… Попробуешь ещё раз?',
             random_id=get_random_id(),
             keyboard=get_keyboard()
@@ -53,21 +55,23 @@ def handle_solution_attempt(event, vk_api, db):
 
 
 def handle_new_question_request(event, vk_api, db, questions):
+    vk_user_id = event.user_id
     question = random.choice(list(
         questions
     ))
     vk_api.messages.send(
-        user_id=event.user_id,
+        user_id=vk_user_id,
         message=question,
         random_id=get_random_id(),
         keyboard=get_keyboard()
     )
-    db.set(event.user_id, questions[question])
+    db.set(vk_user_id, questions[question])
 
 
 def start(event, vk_api):
+    vk_user_id = event.user_id
     vk_api.messages.send(
-        user_id=event.user_id,
+        user_id=vk_user_id,
         message='Привет я бот для викторин что бы начать нажми "Новый вопрос".',
         random_id=get_random_id(),
         keyboard=get_keyboard()
